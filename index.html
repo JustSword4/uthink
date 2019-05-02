@@ -1,0 +1,214 @@
+<html>
+	<head>
+		<meta charset ="utf-8" />
+		<title>Brick breaker in HTML</title>
+		<style>
+			canvas
+			{
+				background:#eee; display: block; margin: 0 auto;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="1200" height="800"></canvas>
+		
+		<script>
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			//ball var
+			var x = canvas.width/2;
+			var y = canvas.height - 30;
+			var ballRadius = 10;
+			var deltaX = 2;
+			var deltaY = -2;
+			var speed = 16;
+			//paddle var
+			var paddleHeight = 10;
+			var paddleWidth = canvas.width/4;
+			var paddleX = (canvas.width - paddleWidth) / 1;
+			
+			var lives = 3;
+			//Brick var
+			var brickRowCount = 5;
+			var brickColCount = 5;
+			var brickPadding = 10;
+			var brickOffset = 30;
+			var brickHeight = 30;
+			
+			
+			// { }[10]{ }[10]{ }[10]{}
+			
+			var brickWidth = (canvas.width - (brickPadding *(brickColCount -1)) - brickOffset * 2)/brickColCount;
+			
+			var bricks = [];
+			function newBricks(){
+				for (var col = 0; col < brickColCount; col++)
+				{
+					bricks[col] = [];
+					for (var row = 0; row < brickRowCount; row++)
+					{
+						bricks[col][row] = {x:0, y:0, status:1};
+					}
+				}
+			}
+			newBricks();
+			
+			function drawBricks()
+			{
+				for (var col = 0; col < brickColCount; col++)
+				{
+					for (var row = 0; row < brickRowCount; row++)
+					{
+						if (bricks[col][row].status == 1){
+							var brickX = (col*(brickWidth + brickPadding)) + brickOffset;
+							var brickY = (row*(brickHeight + brickPadding)) + brickOffset;
+							
+							bricks[col][row].x = brickX;
+							bricks[col][row].y = brickY;
+							
+							ctx.beginPath();
+							ctx.rect(brickX, brickY, brickWidth, brickHeight);
+							ctx.fillStyle = "#FF0000";
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}
+			}
+
+			
+			function senseBricks()
+			{
+				for (var col = 0; col < brickColCount; col++)
+				{
+					for (var row = 0; row < brickRowCount; row++)
+					{
+						var br = bricks[col][row];
+						if (x > br.x && x < br.x + brickWidth && y > br.y && y < br.y + brickHeight && br.status == 1)
+						{
+							deltaY = -1 * deltaY;
+							br.status = 0;
+						}
+					}
+				}
+			}
+			
+			function drawPaddle(){
+				ctx.beginPath();
+				ctx.rect(paddleX,canvas.height - paddleHeight - 30,paddleWidth,paddleHeight);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}
+			document.addEventListener("mousemove",mouseMoveHandler, false);
+			function mouseMoveHandler(event){
+				var relativeX = event.clientX - canvas.offsetLeft;
+				if(relativeX > 0 && relativeX < canvas.width){
+					paddleX = relativeX - paddleWidth / 2;
+				}
+			}
+
+			
+			ctx.beginPath();
+			ctx.rect(160,10,100,40);
+			ctx.strokeStyle = "rgba(0,0,255,0.5)";
+			ctx.stroke();
+			ctx.closePath();
+			
+			function drawBall(){
+				ctx.beginPath();
+				ctx.arc(x,y, ballRadius ,0,Math.PI*2,false);
+				ctx.fillStyle = "green";
+				ctx.fill();
+				ctx.closePath();
+			}
+			
+			function senseWalls()
+			{
+				if (x + deltaX > canvas.width - ballRadius || x + deltaX < ballRadius)
+				{
+					deltaX = -1 * deltaX;
+				}
+				
+				if (y + deltaY < ballRadius)
+				{
+					deltaY = -1 * deltaY;
+				}
+				else if(y + deltaY > canvas.height - ballRadius)
+				{
+					lostLife();
+					x = canvas.width/2;
+					y = canvas.height - 50;
+					deltaX = 2;
+					deltaY = -2;
+					if (bricks[col][row].status == 0)
+					{
+						if (lives > 0)
+						{
+						  drawBricks();
+						}
+					}
+					
+				}
+			}
+			
+			function lostLife()
+			{
+				lives -= 1;
+				
+				if (lives == 2)
+				{
+				 alert("2 lives left");
+				}
+				if (lives == 1)
+				{
+				 alert("1 life left");
+				}
+				if (lives == 0)
+				{
+				  gameOver();
+				}
+			}
+			
+			function sensePaddle(){
+				if (y + deltaY > canvas.height - ballRadius - 20 - paddleHeight / 2){
+					if(x > paddleX && x < paddleX + paddleWidth){
+						deltaY = -1 * deltaY;
+						speed = speed/1.15;
+						interval = setInterval (draw, speed);
+					}
+				}
+			}
+			
+			
+			
+				
+			function draw(){
+				ctx.clearRect(0,0,canvas.width, canvas.height);
+				drawBall();
+				drawPaddle();
+				
+				senseWalls();
+				sensePaddle();
+				
+				drawBricks();
+				senseBricks();
+				
+				x += deltaX;
+				y += deltaY;
+			
+			}
+			
+			function gameOver(){
+				alert ("Game Over Made by Henry G");
+				document.location.reload();
+				clearInterval(interval);
+			}
+			
+			var interval = setInterval (draw, speed);
+			
+		</script>
+	</body>
+
+</html>
